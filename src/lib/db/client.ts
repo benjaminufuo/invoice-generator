@@ -9,12 +9,8 @@ if (process.env.NODE_ENV === "development") {
   }
 }
 
-const uri = process.env.MONGODB_URI!;
+const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/invoice_generator";
 const dbName = process.env.MONGODB_DB_NAME || "invoice_generator";
-
-if (!uri) {
-  throw new Error("Please define MONGODB_URI in your environment variables.");
-}
 
 declare global {
   // eslint-disable-next-line no-var
@@ -33,6 +29,9 @@ if (process.env.NODE_ENV === "development") {
 }
 
 export async function getDb(): Promise<Db> {
+  if (!process.env.MONGODB_URI && process.env.NODE_ENV === "production") {
+    throw new Error("Please define MONGODB_URI in your environment variables.");
+  }
   await client.connect();
   return client.db(dbName);
 }
