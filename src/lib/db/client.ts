@@ -1,4 +1,13 @@
 import { MongoClient, Db } from "mongodb";
+import dns from "dns";
+
+if (process.env.NODE_ENV === "development") {
+  try {
+    dns.setServers(["8.8.8.8", "1.1.1.1"]);
+  } catch {
+    // Ignore if not supported in environment
+  }
+}
 
 const uri = process.env.MONGODB_URI!;
 const dbName = process.env.MONGODB_DB_NAME || "invoice_generator";
