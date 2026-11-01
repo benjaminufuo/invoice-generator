@@ -22,6 +22,18 @@ const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const isGoogleAuthEnabled = Boolean(googleClientId && googleClientSecret);
 
+const cleanUrl = (url?: string) => (url ? url.trim().replace(/\/+$/, "") : undefined);
+
+const rawBetterAuthUrl = cleanUrl(process.env.BETTER_AUTH_URL);
+const rawAppUrl = cleanUrl(process.env.NEXT_PUBLIC_APP_URL);
+const vercelUrl = process.env.VERCEL_URL ? `https://${cleanUrl(process.env.VERCEL_URL)}` : undefined;
+const vercelProdUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${cleanUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL)}`
+  : undefined;
+
+const resolvedBaseURL =
+  rawBetterAuthUrl || vercelProdUrl || vercelUrl || rawAppUrl || "http://localhost:3000";
+
 export const auth = betterAuth({
   database: mongodbAdapter(db),
   emailAndPassword: {
@@ -35,9 +47,14 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || "secret_fallback_key_for_development_mode_min_32_chars",
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL: resolvedBaseURL,
   trustedOrigins: [
-    process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://*.vercel.app",
+    ...(rawBetterAuthUrl ? [rawBetterAuthUrl] : []),
+    ...(rawAppUrl ? [rawAppUrl] : []),
+    ...(vercelUrl ? [vercelUrl] : []),
+    ...(vercelProdUrl ? [vercelProdUrl] : []),
   ],
 });
