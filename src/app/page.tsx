@@ -46,7 +46,7 @@ export default function HomePage() {
           </h1>
 
           <p className="mt-5 text-sm sm:text-lg text-zinc-600 max-w-2xl mx-auto leading-relaxed">
-            The minimalist invoicing solution engineered for freelancers, consultants, and independent agencies. Manage recurring clients, issue invoices in seconds, and export clean PDFs.
+            the minimalist invoicing solution engineered for freelancers, consultants, and independent agencies. Manage recurring clients, issue invoices in seconds, and export clean PDFs.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-3">
