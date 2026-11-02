@@ -9,6 +9,18 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: "/callback/:path*",
+        destination: "/api/auth/callback/:path*",
+      },
+      {
+        source: "/auth/callback/:path*",
+        destination: "/api/auth/callback/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
