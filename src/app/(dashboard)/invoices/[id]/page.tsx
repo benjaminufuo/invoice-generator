@@ -5,10 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Invoice, InvoiceStatus } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/calculations";
+import { downloadInvoicePdf } from "@/lib/pdf";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
-import { Printer, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { ShareModal } from "@/components/invoices/ShareModal";
+import { Printer, Pencil, Trash2, ArrowLeft, Download, Share2 } from "lucide-react";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -21,6 +23,8 @@ export default function InvoiceDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const loadInvoice = async () => {
     if (!id) return;
@@ -47,6 +51,19 @@ export default function InvoiceDetailPage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!invoice || isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    try {
+      await downloadInvoicePdf(invoice);
+    } catch (err) {
+      console.error("PDF download failed:", err);
+      alert("Failed to download PDF. Please try again.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   const handleStatusChange = async (newStatus: InvoiceStatus) => {
@@ -149,6 +166,29 @@ export default function InvoiceDetailPage() {
             </div>
           </div>
 
+          {/* Download PDF button */}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleDownloadPdf}
+            isLoading={isDownloadingPdf}
+            className="gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Download PDF</span>
+          </Button>
+
+          {/* Share Invoice button */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowShareModal(true)}
+            className="gap-1.5"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Share Invoice</span>
+          </Button>
+
           <Button variant="secondary" size="sm" onClick={handlePrint} className="gap-1.5">
             <Printer className="w-3.5 h-3.5" />
             <span>Print / PDF</span>
@@ -177,15 +217,27 @@ export default function InvoiceDetailPage() {
       <div className="bg-white rounded-xl border border-zinc-200/80 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] p-6 sm:p-10 md:p-12 print-page">
         {/* Document Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start pb-8 border-b border-zinc-100 gap-6">
-          <div>
-            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-              Commercial Invoice
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-950 font-mono mt-0.5">
-              {invoice.invoiceNumber}
-            </h1>
-            <div className="mt-2">
-              <Badge status={invoice.status} size="sm" />
+          <div className="space-y-4">
+            {invoice.logoUrl && (
+              <div className="max-w-[180px] max-h-[64px] flex items-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={invoice.logoUrl}
+                  alt={`${invoice.sender.name} Logo`}
+                  className="max-h-16 max-w-full object-contain rounded-xs"
+                />
+              </div>
+            )}
+            <div>
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                Commercial Invoice
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-950 font-mono mt-0.5">
+                {invoice.invoiceNumber}
+              </h1>
+              <div className="mt-2">
+                <Badge status={invoice.status} size="sm" />
+              </div>
             </div>
           </div>
 
@@ -339,6 +391,14 @@ export default function InvoiceDetailPage() {
         confirmLabel="Delete Invoice"
         confirmVariant="danger"
         isLoading={isDeleting}
+      />
+
+      {/* Share Invoice Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        invoice={invoice}
+        onInvoiceUpdated={(updated) => setInvoice(updated)}
       />
     </div>
   );

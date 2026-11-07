@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Customer, Invoice, SupportedCurrency, InvoiceStatus } from "@/types";
 import { calculateLineTotal, calculateSubtotal, formatCurrency } from "@/lib/calculations";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
+import { Upload, ImageIcon, Loader2, X, RefreshCw } from "lucide-react";
 
 interface InvoiceFormProps {
   initialInvoice?: Invoice;
@@ -26,9 +27,17 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   isEdit = false,
 }) => {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Logo states
+  const [logoUrl, setLogoUrl] = useState<string>(initialInvoice?.logoUrl || "");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Form states
   const [invoiceNumber, setInvoiceNumber] = useState(
@@ -105,6 +114,26 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     initialInvoice?.paymentInstructions || ""
   );
 
+  // If creating new invoice, pre-fill from user profile logo
+  useEffect(() => {
+    async function loadProfileLogo() {
+      if (!isEdit && !initialInvoice?.logoUrl) {
+        try {
+          const res = await fetch("/api/profile/logo");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.data?.logoUrl) {
+              setLogoUrl(data.data.logoUrl);
+            }
+          }
+        } catch (err) {
+          console.warn("Could not load profile logo:", err);
+        }
+      }
+    }
+    loadProfileLogo();
+  }, [isEdit, initialInvoice?.logoUrl]);
+
   // Load existing customers and fetch next invoice number if new
   useEffect(() => {
     async function loadInitialData() {
@@ -130,6 +159,55 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }
     loadInitialData();
   }, [isEdit, invoiceNumber]);
+
+  // Handle Logo File Upload
+  const handleLogoFile = async (file: File) => {
+    setLogoUploadError(null);
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoUploadError("Logo file exceeds the 2 MB limit.");
+      return;
+    }
+
+    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+    if (!allowed.includes(file.type.toLowerCase())) {
+      setLogoUploadError("Supported formats: PNG, JPG, JPEG, and WebP.");
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/profile/logo", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setLogoUploadError(data.error || "Failed to upload business logo.");
+        return;
+      }
+
+      setLogoUrl(data.data.logoUrl);
+    } catch (err) {
+      console.error("Logo upload error:", err);
+      setLogoUploadError("Network error while uploading logo. Please retry.");
+    } finally {
+      setIsUploadingLogo(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoUrl("");
+    setLogoUploadError(null);
+  };
 
   // When customer is selected from dropdown, populate details
   const handleCustomerSelect = (id: string) => {
@@ -231,6 +309,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
         issueDate,
         dueDate: dueDate || undefined,
         currency,
+        logoUrl: logoUrl.trim() || undefined,
         status,
         sender: {
           name: senderName.trim(),
@@ -352,11 +431,140 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
       {/* Sender and Customer Information */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sender Box */}
+        {/* Sender Box with Business Logo Upload */}
         <div className="bg-white p-5 sm:p-6 rounded-xl border border-zinc-200/80 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)] space-y-4">
-          <h2 className="text-sm font-semibold text-zinc-900 tracking-tight">
-            From (Issuer Details)
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-zinc-900 tracking-tight">
+              From (Issuer Details)
+            </h2>
+          </div>
+
+          {/* Business Logo Upload Area */}
+          <div className="border border-zinc-200/90 rounded-xl p-3.5 bg-zinc-50/50 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-semibold text-zinc-900">
+                  Business Logo
+                </span>
+                <p className="text-[11px] text-zinc-500">
+                  Upload your logo to personalize your invoices.
+                </p>
+              </div>
+            </div>
+
+            {logoUrl ? (
+              <div className="flex items-center gap-3.5 p-2.5 bg-white border border-zinc-200 rounded-lg">
+                <div className="w-16 h-14 bg-zinc-50 border border-zinc-200/70 rounded flex items-center justify-center overflow-hidden shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logoUrl}
+                    alt="Business Logo"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>Logo attached to invoice</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-400 truncate">
+                    Will be preserved for this invoice upon issuance
+                  </p>
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <label className="text-[11px] font-semibold text-zinc-700 hover:text-zinc-900 underline cursor-pointer inline-flex items-center gap-1">
+                      <RefreshCw className="w-2.5 h-2.5" />
+                      <span>Replace</span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleLogoFile(f);
+                        }}
+                        disabled={isUploadingLogo || isLoading}
+                      />
+                    </label>
+                    <span className="text-zinc-300">|</span>
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      disabled={isUploadingLogo || isLoading}
+                      className="text-[11px] font-semibold text-red-600 hover:text-red-700 underline inline-flex items-center gap-0.5"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragOver(true);
+                }}
+                onDragLeave={() => setIsDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragOver(false);
+                  const f = e.dataTransfer.files?.[0];
+                  if (f) handleLogoFile(f);
+                }}
+                className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                  isDragOver
+                    ? "border-zinc-900 bg-zinc-100/80"
+                    : "border-zinc-300 hover:border-zinc-400 bg-white"
+                }`}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/png,image/jpeg,image/jpg,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleLogoFile(f);
+                  }}
+                  disabled={isUploadingLogo || isLoading}
+                />
+
+                {isUploadingLogo ? (
+                  <div className="flex flex-col items-center justify-center py-2 gap-2 text-zinc-500">
+                    <Loader2 className="w-5 h-5 animate-spin text-zinc-900" />
+                    <span className="text-xs font-medium">Uploading business logo...</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-1.5">
+                    <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 mb-0.5">
+                      <ImageIcon className="w-4 h-4" />
+                    </div>
+                    <div className="text-xs text-zinc-700">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="font-semibold text-zinc-950 underline hover:text-zinc-800"
+                        disabled={isLoading}
+                      >
+                        Upload logo
+                      </button>{" "}
+                      <span>or drag and drop</span>
+                    </div>
+                    <p className="text-[10px] text-zinc-400">
+                      Supported formats: PNG, JPG, JPEG, and WebP (up to 2 MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {logoUploadError && (
+              <p className="text-[11px] text-red-600 font-medium">
+                {logoUploadError}
+              </p>
+            )}
+          </div>
+
           <Input
             label="Your Business / Individual Name"
             required

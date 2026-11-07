@@ -39,6 +39,9 @@ export async function GET(request: Request, { params }: RouteParams) {
         issueDate: invoice.issueDate,
         dueDate: invoice.dueDate || "",
         currency: invoice.currency,
+        logoUrl: invoice.logoUrl || "",
+        shareToken: invoice.shareToken || "",
+        isPublicShareEnabled: invoice.isPublicShareEnabled || false,
         sender: invoice.sender,
         customer: invoice.customer,
         items: invoice.items,
@@ -104,6 +107,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (result.data.issueDate) updateFields.issueDate = result.data.issueDate;
     if (result.data.dueDate !== undefined) updateFields.dueDate = result.data.dueDate || undefined;
     if (result.data.currency) updateFields.currency = result.data.currency;
+    if (result.data.logoUrl !== undefined) updateFields.logoUrl = result.data.logoUrl || undefined;
     if (result.data.sender) updateFields.sender = result.data.sender;
     if (result.data.customer) updateFields.customer = result.data.customer;
     if (result.data.notes !== undefined) updateFields.notes = result.data.notes;
@@ -143,6 +147,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         issueDate: updateResult.issueDate,
         dueDate: updateResult.dueDate || "",
         currency: updateResult.currency,
+        logoUrl: updateResult.logoUrl || "",
+        shareToken: updateResult.shareToken || "",
+        isPublicShareEnabled: updateResult.isPublicShareEnabled || false,
         sender: updateResult.sender,
         customer: updateResult.customer,
         items: updateResult.items,

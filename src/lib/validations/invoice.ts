@@ -26,6 +26,7 @@ export const invoiceCreateSchema = z.object({
   issueDate: z.string().min(1, "Issue date is required"),
   dueDate: z.string().optional().or(z.literal("")),
   currency: z.enum(["NGN", "USD"]),
+  logoUrl: z.string().max(2000).optional().or(z.literal("")),
   sender: invoiceSenderSchema,
   customer: invoiceCustomerSchema,
   items: z.array(lineItemSchema).min(1, "At least one line item is required"),

@@ -1,121 +1,114 @@
-# Invoice Generator — Project Planning Pack
+# Invoice Generator — Project Overview & Documentation
 
 ## 1. Project Overview
 
-This project is a web-based invoice generator that allows individual users to create, manage, and export professional invoices.
+A modern, production-ready web-based invoice generator built with Next.js, TypeScript, Tailwind CSS, Better Auth, and MongoDB Atlas.
 
-The application will support multiple currencies, including Nigerian Naira (NGN) and US Dollars (USD). Users will have private accounts and will only be able to access their own invoices and associated customer data.
+The application allows freelance professionals and business owners to create, manage, issue, download, and share professional invoices in both Nigerian Naira (NGN) and US Dollars (USD) with complete data isolation, historical logo preservation, and instant PDF generation.
 
-The goal is to build a reliable, secure, responsive, and easy-to-use invoice generation tool with a polished user interface.
+---
 
 ## 2. Technology Stack
 
-- **Framework:** Next.js
-- **Programming language:** TypeScript
+- **Framework:** Next.js (App Router, Turbopack)
+- **Programming Language:** TypeScript
 - **Styling:** Tailwind CSS
-- **Authentication:** Better Auth
-- **Database:** MongoDB Atlas
-- **Backend:** Next.js Route Handlers
+- **Authentication:** Better Auth (Credential & Google OAuth)
+- **Database:** MongoDB Atlas (native official driver)
+- **PDF Generation:** `pdf-lib` (pure vector A4 PDF generation on client and server)
+- **Asset Storage:** Dual-mode persistent storage (Vercel Blob with seamless MongoDB Binary Grid fallback)
 - **Deployment:** Vercel
-- **PDF generation:** A suitable PDF generation library selected during implementation
-- **File storage:** A dedicated storage service such as Vercel Blob if logo uploads are included
 
-## 3. MVP Features
+---
 
-The initial release should include:
+## 3. Core Features
 
-1. User registration, login, logout, and session management.
-2. A protected dashboard.
-3. Invoice creation and editing.
-4. Invoice listing, viewing, and deletion.
-5. Support for multiple currencies, including NGN and USD.
-6. Invoice line items, quantities, unit prices, subtotals, and totals.
-7. Customer details on invoices.
-8. Professional invoice PDF generation and download.
-9. Responsive layouts for desktop, tablet, and mobile.
-10. Secure storage of invoice data in MongoDB Atlas.
-11. User-specific authorization to prevent access to another user's records.
+### A. Business Logo Upload & Historical Preservation (Mandatory Rule)
+- **Drag-and-Drop & File Picker:** Supports PNG, JPG, JPEG, and WebP up to 2 MB.
+- **Preview & Management:** Live image preview in invoice editor with "Replace" and "Remove" controls.
+- **Historical Logo Preservation:**
+  - New invoices automatically snapshot the issuer's active business logo at the time of creation.
+  - Previously issued invoices retain their snapshot permanently; replacing or deleting a profile logo **never** mutates historical invoices.
+  - Safe asset garbage collection: Assets referenced by any historical invoice cannot be deleted.
+- **Zero-Config Storage:** Supports Vercel Blob when `BLOB_READ_WRITE_TOKEN` is present, or fallback to the secure MongoDB `assets` collection streaming through `/api/assets/[id]`.
 
-## 4. Features Excluded from the MVP
+### B. Direct Vector PDF Download
+- **Dedicated "Download PDF" Button:** Clean action button placed prominently alongside the legacy "Print / PDF" option.
+- **Professional A4 Vector Layout:** Generated using `pdf-lib` with exact points measurement (595.28 x 841.89 pt).
+- **Proportional Logo Embedding:** Embedded with aspect ratio strictly preserved (max 140x55 pt).
+- **Multi-page Support:** Automatic pagination and table re-heading when items exceed single-page height.
+- **Standard Typography & Formatting:** Standard Helvetica typography, WinAnsi-safe currency formatting (`NGN 50,000.00` / `$50.00`), sender/recipient details, line items table, and payment instructions.
+- **Standardized File Naming:** Automatically names downloads `Invoice-[invoiceNumber].pdf`.
 
-The following features are deferred:
+### C. Multi-Channel Invoice Sharing
+- **Dedicated "Share Invoice" Modal:** Triggered from invoice detail views.
+- **Secure Unguessable Public Link:**
+  - Generates a 32-character cryptographically secure token (`/share/[token]`).
+  - Owner-controlled toggle to **Enable Link** or **Revoke Link** on demand.
+  - One-click copy with visual "Copied!" feedback and quick preview link.
+- **Native Device Sharing:** Integrates with `navigator.share` for system dialogs (AirDrop, WhatsApp, nearby sharing) on mobile and modern desktop browsers.
+- **Email Sharing:** Pre-formatted `mailto:` link with invoice number, recipient, total amount, and secure link.
+- **Social Sharing:** Direct share links for WhatsApp (`https://wa.me/?text=...`) and LinkedIn.
 
-- Paid plans and subscriptions.
-- Payment processing.
-- Automatic currency conversion.
-- Team workspaces and shared invoices.
-- Advanced tax and discount calculations until their requirements are finalized.
-- Email or WhatsApp invoice delivery unless explicitly added to the requirements.
-- Advanced analytics and reporting.
+### D. Public Client Invoice View (`/share/[token]`)
+- Unauthenticated, secure view designed specifically for clients.
+- Sanitized payload: Never leaks owner IDs, database ObjectIDs, or private internal notes.
+- Includes client-side **Download PDF** and **Print Invoice** buttons.
+- Graceful handling of invalid, disabled, or revoked links.
 
-## 5. Data Privacy and Security
+### E. Financial Calculations & Data Security
+- 2-decimal precision integer arithmetic eliminating floating-point rounding errors.
+- Authoritative server-side recalculation of line totals, subtotals, and totals.
+- Strict per-user data isolation: Invoices and customer records are scoped strictly to `ownerId`.
 
-Every invoice must be associated with its owner.
+---
 
-The application must verify ownership on the server for every invoice operation. Hiding another user's invoice in the interface is not sufficient; unauthorized access must also be prevented at the backend.
+## 4. API Endpoints
 
-Authentication secrets, database credentials, and other sensitive environment variables must never be exposed in client-side code or committed to source control.
+| Method | Route | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/api/invoices` | List invoices for authenticated user | Yes |
+| `POST` | `/api/invoices` | Create invoice with logo snapshot & share token | Yes |
+| `GET` | `/api/invoices/[id]` | Get single invoice details | Yes |
+| `PATCH` | `/api/invoices/[id]` | Update invoice fields | Yes |
+| `DELETE` | `/api/invoices/[id]` | Delete invoice | Yes |
+| `GET` | `/api/invoices/[id]/share` | Get public link status & share URL | Yes |
+| `POST` | `/api/invoices/[id]/share` | Enable public sharing | Yes |
+| `DELETE` | `/api/invoices/[id]/share` | Revoke public sharing | Yes |
+| `GET` | `/api/invoices/share/[token]` | Fetch sanitized invoice for client view | No |
+| `GET` | `/api/profile/logo` | Retrieve user's current business profile logo | Yes |
+| `POST` | `/api/profile/logo` | Upload new business profile logo (max 2MB) | Yes |
+| `DELETE` | `/api/profile/logo` | Clear profile logo (preserves historical assets) | Yes |
+| `GET` | `/api/assets/[id]` | Stream binary image asset from MongoDB | No |
 
-## 6. Development Approach
+---
 
-The AI coding tool should follow these principles:
+## 5. Verification & Testing
 
-1. Read the project documentation before making changes.
-2. Inspect the existing repository before creating or modifying files.
-3. Plan the architecture and implementation sequence.
-4. Build the application in small, verifiable stages.
-5. Reuse shared components and consistent design tokens.
-6. Use TypeScript and Tailwind CSS consistently.
-7. Test each major feature before proceeding.
-8. Review security, accessibility, responsiveness, and error handling.
-9. Avoid adding unapproved features or unnecessary dependencies.
-10. Document important implementation decisions.
+Run all unit, calculation, and enhancement tests:
+```bash
+npm test
+```
 
-## 7. Recommended Implementation Order
+Run TypeScript verification:
+```bash
+npx tsc --noEmit
+```
 
-1. Project setup and configuration.
-2. Authentication and protected routes.
-3. MongoDB connection and data models.
-4. Authorization and user data isolation.
-5. Dashboard layout and navigation.
-6. Invoice creation and editing.
-7. Invoice listing and management.
-8. Multi-currency formatting and invoice calculations.
-9. PDF generation and download.
-10. Validation, error handling, responsive testing, and security review.
-11. Deployment configuration and production verification.
+Build production bundle:
+```bash
+npm run build
+```
 
-## 8. Planning Pack Contents
+---
 
-The complete planning pack is organized into the following documents:
+## 6. Environment Variables
 
-- `README.md` — Project overview and guide.
-- `docs/PRD.md` — Product Requirements Document.
-- `docs/ARCHITECTURE.md` — Technical architecture and database design.
-- `docs/DESIGN.md` — Design system and UI/UX requirements.
-- `docs/RULES.md` — Coding standards and AI implementation constraints.
-- `docs/TASKS.md` — Implementation checklist.
-- `docs/TEST_PLAN.md` — Testing strategy and acceptance checks.
-- `docs/SECURITY.md` — Authentication, authorization, and data protection.
-- `docs/DECISIONS.md` — Confirmed decisions and deferred questions.
-- `docs/MEMORY.md` — Persistent context for the AI coding tool.
-- `PROMPTS.md` — Copy-and-paste prompts for planning, implementation, testing, and review.
-- `.env.example` — Example environment variable names without real credentials.
-
-## 9. Instructions for the AI Coding Tool
-
-Before implementing any feature, read the relevant documents in this pack.
-
-Treat the PRD as the source of truth for product requirements, the architecture document as the technical guide, and the coding rules as implementation constraints.
-
-If a requirement is unclear, identify it and request clarification rather than silently inventing a product decision.
-
-Do not implement pricing, subscriptions, payment processing, shared workspaces, or other deferred features without explicit approval.
-
-The application is not considered complete merely because the interface looks correct. Authentication, persistence, invoice calculations, authorization, PDF output, and error handling must work and be tested.
-
-## 10. Completion Criteria
-
-The MVP is ready for release when users can register, log in, create and manage their own invoices, use supported currencies, download professional PDFs, and reliably access their saved data without being able to access another user's records.
-
-The application must also pass its essential functional, security, and responsive-design checks before production deployment.
+See `.env.example` for reference:
+- `MONGODB_URI`: MongoDB Atlas connection string.
+- `MONGODB_DB_NAME`: Database name (default `invoice_generator`).
+- `BETTER_AUTH_SECRET`: Random 32+ character authentication secret.
+- `BETTER_AUTH_URL`: Canonical URL of the application.
+- `NEXT_PUBLIC_APP_URL`: Public-facing application URL used for public share links.
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: Optional Google OAuth credentials.
+- `BLOB_READ_WRITE_TOKEN`: Optional Vercel Blob token for cloud image storage.

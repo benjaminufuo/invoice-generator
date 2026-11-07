@@ -320,6 +320,9 @@ Use this section to record approved resolutions.
 | 2026-10-28 | PDF generation | High-fidelity clean print stylesheet + browser PDF export | Approved |
 | 2026-10-28 | Monetary precision | 2-decimal rounding to integer cents/kobo | Approved |
 | 2026-10-28 | Deletion and retention policies | Customer deletion retains invoice snapshots; invoice deletion with confirmation | Approved |
+| 2026-11-07 | Business Logo & Preservation | PNG/JPG/WebP <= 2MB, Vercel Blob/MongoDB assets, immutable invoice snapshot, historical protection | Approved |
+| 2026-11-07 | Direct PDF Download | Dedicated "Download PDF" action, vector A4 generation via `pdf-lib`, automatic pagination & logo embedding | Approved |
+| 2026-11-07 | Multi-channel Sharing | Dedicated "Share Invoice" modal, 32-char unguessable token (`/share/[token]`), owner toggle, native share, mailto, WhatsApp, LinkedIn | Approved |
 
 ## 10. Final Rule
 

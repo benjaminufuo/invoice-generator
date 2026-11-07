@@ -45,6 +45,9 @@ export async function GET(request: Request) {
       issueDate: inv.issueDate,
       dueDate: inv.dueDate || "",
       currency: inv.currency,
+      logoUrl: inv.logoUrl || "",
+      shareToken: inv.shareToken || "",
+      isPublicShareEnabled: inv.isPublicShareEnabled || false,
       sender: inv.sender,
       customer: inv.customer,
       items: inv.items,
@@ -107,6 +110,20 @@ export async function POST(request: Request) {
     const subtotal = calculateSubtotal(calculatedItems);
     const total = subtotal; // For MVP, total equals subtotal
 
+    // Determine logo snapshot: use provided logoUrl, or fallback to user's profile logo
+    let logoSnapshot = result.data.logoUrl?.trim() || "";
+    if (!logoSnapshot) {
+      const profile = await db
+        .collection("business_profiles")
+        .findOne({ ownerId: user.id });
+      if (profile?.logoUrl) {
+        logoSnapshot = profile.logoUrl;
+      }
+    }
+
+    const { randomBytes } = await import("crypto");
+    const shareToken = randomBytes(16).toString("hex");
+
     const now = new Date();
     const invoiceDoc = {
       ownerId: user.id,
@@ -114,6 +131,10 @@ export async function POST(request: Request) {
       issueDate: result.data.issueDate,
       dueDate: result.data.dueDate || undefined,
       currency: result.data.currency,
+      logoUrl: logoSnapshot || undefined,
+      shareToken,
+      isPublicShareEnabled: false,
+      shareTokenCreatedAt: now.toISOString(),
       sender: {
         name: result.data.sender.name.trim(),
         email: result.data.sender.email?.trim() || "",

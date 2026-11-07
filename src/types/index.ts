@@ -35,6 +35,10 @@ export interface Invoice {
   issueDate: string; // ISO string
   dueDate?: string; // ISO string
   currency: SupportedCurrency;
+  logoUrl?: string; // Historical logo snapshot at time of invoice creation/issuance
+  shareToken?: string; // Cryptographically secure token for public sharing
+  isPublicShareEnabled?: boolean; // Whether the public share link is active
+  shareTokenCreatedAt?: string;
   sender: InvoiceSender;
   customer: InvoiceCustomer;
   items: InvoiceItem[];
@@ -68,12 +72,47 @@ export interface ApiError {
   details?: Record<string, string[]>;
 }
 
+export interface BusinessProfile {
+  _id?: string;
+  ownerId: string;
+  businessName?: string;
+  logoUrl?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  updatedAt: string;
+}
+
+// Public shared invoice representation (sanitized)
+export interface PublicInvoice {
+  invoiceNumber: string;
+  issueDate: string;
+  dueDate?: string;
+  currency: SupportedCurrency;
+  logoUrl?: string;
+  sender: InvoiceSender;
+  customer: {
+    name: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+  };
+  items: InvoiceItem[];
+  subtotal: number;
+  total: number;
+  notes?: string;
+  paymentInstructions?: string;
+  status: InvoiceStatus;
+  updatedAt: string;
+}
+
 // Form types (without server-computed fields)
 export interface InvoiceFormData {
   invoiceNumber: string;
   issueDate: string;
   dueDate?: string;
   currency: SupportedCurrency;
+  logoUrl?: string;
   sender: InvoiceSender;
   customer: InvoiceCustomer;
   items: Array<{

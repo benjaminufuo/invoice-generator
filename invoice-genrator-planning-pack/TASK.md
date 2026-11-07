@@ -293,7 +293,24 @@ This phase depends on whether logo uploads are approved for the MVP.
 - Core features work in the deployed environment.
 - No secrets are committed to the repository.
 
-## 15. Suggested Task Execution Order
+## 15. Phase 12 — Feature Enhancements: Logo Upload, Direct PDF Download & Sharing
+
+### Tasks
+
+- [x] Configure dual persistent storage for logo assets (Vercel Blob + MongoDB Binary Grid fallback).
+- [x] Implement business logo upload with drag-and-drop, 2 MB size limits, and PNG/JPG/WebP validation.
+- [x] Enforce mandatory historical logo preservation: immutable invoice snapshot and garbage collection protection.
+- [x] Implement pure vector A4 PDF generation and direct browser download via `pdf-lib`.
+- [x] Add prominent **Download PDF** button to invoice detail and public share pages.
+- [x] Implement multi-channel invoice sharing with secure unguessable tokens (`/share/[token]`).
+- [x] Add owner-controlled public sharing toggle (enable / revoke on demand).
+- [x] Implement **Share Invoice** modal with Native Share, Copy Link, Email mailto, WhatsApp, and LinkedIn.
+- [x] Implement public sanitized invoice view (`/share/[token]`) with no owner ID leakage.
+- [x] Pass automated calculation and feature enhancement test suites (`npm test`).
+- [x] Pass TypeScript type verification (`npx tsc --noEmit`).
+- [x] Pass production build (`npm run build`).
+
+## 16. Suggested Task Execution Order
 
 Follow this order unless repository inspection reveals a necessary dependency change:
 

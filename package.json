@@ -5,15 +5,17 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "npx tsx scripts/test-calculations.ts",
+    "test": "npx tsx scripts/test-calculations.ts && npx tsx scripts/test-enhancements.ts",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.2",
     "better-auth": "^1.7.14",
     "lucide-react": "^1.63.0",
     "mongodb": "^7.7.0",
     "next": "16.4.3",
+    "pdf-lib": "^1.17.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^4.6.7"
