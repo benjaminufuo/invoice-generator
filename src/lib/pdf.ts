@@ -378,136 +378,163 @@ export async function generateInvoicePdf(
   // ==========================================
   // 3. LINE ITEMS TABLE
   // ==========================================
-  ensureSpace(100);
+  ensureSpace(120);
 
   // Column definitions
-  const colDescX = MARGIN + 8;
-  const colDescW = 260;
-  const colQtyX = MARGIN + 280;
+  const colDescX = MARGIN + 10;
+  const colDescW = 255;
+  const colQtyX = MARGIN + 275;
   const colQtyW = 40;
-  const colPriceX = MARGIN + 330;
-  const colPriceW = 80;
+  const colPriceX = MARGIN + 325;
+  const colPriceW = 85;
   const colAmountX = MARGIN + 420;
   const colAmountW = 75;
 
-  const drawTableHeader = (y: number) => {
+  const HEADER_HEIGHT = 22;
+
+  const drawTableHeader = (topY: number) => {
     // Header background fill
     page.drawRectangle({
       x: MARGIN,
-      y: y - 18,
+      y: topY - HEADER_HEIGHT,
       width: CONTENT_WIDTH,
-      height: 22,
+      height: HEADER_HEIGHT,
       color: COLOR_HEADER_BG,
     });
 
+    const headerTextY = topY - 14;
+
     page.drawText("DESCRIPTION", {
       x: colDescX,
-      y: y - 12,
+      y: headerTextY,
       size: 8,
       font: fontBold,
       color: COLOR_MUTED,
     });
     page.drawText("QTY", {
       x: colQtyX,
-      y: y - 12,
+      y: headerTextY,
       size: 8,
       font: fontBold,
       color: COLOR_MUTED,
     });
     page.drawText("UNIT PRICE", {
       x: colPriceX + colPriceW - fontBold.widthOfTextAtSize("UNIT PRICE", 8),
-      y: y - 12,
+      y: headerTextY,
       size: 8,
       font: fontBold,
       color: COLOR_MUTED,
     });
     page.drawText("AMOUNT", {
       x: colAmountX + colAmountW - fontBold.widthOfTextAtSize("AMOUNT", 8),
-      y: y - 12,
+      y: headerTextY,
       size: 8,
       font: fontBold,
       color: COLOR_MUTED,
     });
+
+    // Header bottom border
+    page.drawLine({
+      start: { x: MARGIN, y: topY - HEADER_HEIGHT },
+      end: { x: PAGE_WIDTH - MARGIN, y: topY - HEADER_HEIGHT },
+      thickness: 0.75,
+      color: COLOR_BORDER,
+    });
   };
 
   drawTableHeader(cursorY);
-  cursorY -= 28;
+  cursorY -= HEADER_HEIGHT;
 
-  // Draw Table Rows
+  // Draw Table Rows with proper vertical centering and clean bottom divider lines
+  const LINE_HEIGHT = 14;
+
   for (const item of invoice.items) {
-    const descLines = wrapText(item.description, colDescW - 10, fontRegular, 9);
-    const rowHeight = Math.max(descLines.length * 13 + 10, 24);
+    const descLines = wrapText(item.description || "", colDescW - 10, fontRegular, 9);
+    const lineCount = Math.max(descLines.length, 1);
+    
+    // Generous row height with vertical breathing room
+    const rowHeight = Math.max(lineCount * LINE_HEIGHT + 14, 28);
 
+    // If row doesn't fit on page, add a new page and redraw header
     if (cursorY - rowHeight < MARGIN + 100) {
       page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
       cursorY = PAGE_HEIGHT - MARGIN;
       drawTableHeader(cursorY);
-      cursorY -= 28;
+      cursorY -= HEADER_HEIGHT;
     }
 
-    // Row description
-    let itemY = cursorY;
+    const rowTop = cursorY;
+    const rowBottom = rowTop - rowHeight;
+
+    // Center the text block vertically within the row:
+    const textBlockHeight = (lineCount - 1) * LINE_HEIGHT + 8;
+    const paddingTop = Math.max((rowHeight - textBlockHeight) / 2, 8);
+    const firstLineBaseline = rowTop - paddingTop - 7.5;
+
+    // Draw Description lines
+    let lineY = firstLineBaseline;
     for (const dLine of descLines) {
       page.drawText(dLine, {
         x: colDescX,
-        y: itemY,
+        y: lineY,
         size: 9,
         font: fontRegular,
         color: COLOR_PRIMARY,
       });
-      itemY -= 13;
+      lineY -= LINE_HEIGHT;
     }
 
-    // Qty
+    // Draw Qty (vertically aligned with first line)
     page.drawText(String(item.quantity), {
       x: colQtyX,
-      y: cursorY,
+      y: firstLineBaseline,
       size: 9,
       font: fontRegular,
       color: COLOR_PRIMARY,
     });
 
-    // Unit Price (right aligned)
+    // Draw Unit Price (right aligned with first line)
     const priceText = formatPdfCurrency(item.unitPrice, invoice.currency);
     const priceW = fontRegular.widthOfTextAtSize(priceText, 9);
     page.drawText(priceText, {
       x: colPriceX + colPriceW - priceW,
-      y: cursorY,
+      y: firstLineBaseline,
       size: 9,
       font: fontRegular,
       color: COLOR_PRIMARY,
     });
 
-    // Amount (right aligned)
+    // Draw Amount / Line Total (right aligned with first line)
     const amountText = formatPdfCurrency(item.lineTotal, invoice.currency);
     const amountW = fontBold.widthOfTextAtSize(amountText, 9);
     page.drawText(amountText, {
       x: colAmountX + colAmountW - amountW,
-      y: cursorY,
+      y: firstLineBaseline,
       size: 9,
       font: fontBold,
       color: COLOR_PRIMARY,
     });
 
-    cursorY -= rowHeight;
-
-    // Row underline
+    // Draw bottom divider line strictly at rowBottom
     page.drawLine({
-      start: { x: MARGIN, y: cursorY + 4 },
-      end: { x: PAGE_WIDTH - MARGIN, y: cursorY + 4 },
+      start: { x: MARGIN, y: rowBottom },
+      end: { x: PAGE_WIDTH - MARGIN, y: rowBottom },
       thickness: 0.5,
       color: COLOR_BORDER,
     });
+
+    // Move cursor to bottom of current row
+    cursorY = rowBottom;
   }
 
-  cursorY -= 10;
+  cursorY -= 16;
 
   // ==========================================
   // 4. TOTALS SECTION
   // ==========================================
-  ensureSpace(80);
+  ensureSpace(90);
 
-  const totalsBoxW = 200;
+  const totalsBoxW = 220;
   const totalsBoxX = PAGE_WIDTH - MARGIN - totalsBoxW;
 
   // Subtotal
@@ -528,20 +555,20 @@ export async function generateInvoicePdf(
     color: COLOR_PRIMARY,
   });
 
-  cursorY -= 18;
-
-  // Divider above Total
+  // Divider above Total Due (placed with generous padding below Subtotal)
+  const totalDividerY = cursorY - 14;
   page.drawLine({
-    start: { x: totalsBoxX, y: cursorY + 6 },
-    end: { x: PAGE_WIDTH - MARGIN, y: cursorY + 6 },
+    start: { x: totalsBoxX, y: totalDividerY },
+    end: { x: PAGE_WIDTH - MARGIN, y: totalDividerY },
     thickness: 1,
     color: COLOR_BORDER,
   });
 
-  // Total Due
+  // Total Due (placed with generous padding below Divider)
+  const totalDueY = totalDividerY - 18;
   page.drawText("Total Due:", {
     x: totalsBoxX,
-    y: cursorY - 4,
+    y: totalDueY,
     size: 12,
     font: fontBold,
     color: COLOR_PRIMARY,
@@ -550,13 +577,13 @@ export async function generateInvoicePdf(
   const totalW = fontBold.widthOfTextAtSize(totalStr, 12);
   page.drawText(totalStr, {
     x: PAGE_WIDTH - MARGIN - totalW,
-    y: cursorY - 4,
+    y: totalDueY,
     size: 12,
     font: fontBold,
     color: COLOR_PRIMARY,
   });
 
-  cursorY -= 35;
+  cursorY = totalDueY - 35;
 
   // ==========================================
   // 5. PAYMENT INSTRUCTIONS & NOTES
