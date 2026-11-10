@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   ];
 
   const content = (
-    <div className="flex flex-col h-full bg-white border-r border-zinc-200/80 w-60 p-3 sm:p-4 select-none">
+    <div className="flex flex-col h-full bg-white border-r border-zinc-200/80 w-full p-3 sm:p-4 select-none">
       <div className="mb-4">
         <Link
           href="/invoices/new"
@@ -152,7 +152,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         })}
       </nav>
 
-      <div className="pt-3 border-t border-zinc-100 space-y-1.5">
+      {/* Mobile Drawer Logout Button */}
+      <div className="pt-3 border-t border-zinc-100 md:hidden">
         <button
           type="button"
           onClick={handleLogout}
@@ -173,14 +174,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </svg>
           Sign Out
         </button>
+      </div>
 
-        <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1 pt-1">
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            Connected
-          </span>
-          <span className="font-mono text-[10px]">v1.0</span>
-        </div>
+      <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400 px-1 pt-1">
+        <span className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          Connected
+        </span>
+        <span className="font-mono text-[10px]">v1.0</span>
       </div>
     </div>
   );
@@ -188,8 +189,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block shrink-0 no-print">
-        <div className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
+      <aside className="hidden md:block shrink-0 w-64 no-print">
+        <div className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto w-64">
           {content}
         </div>
       </aside>
@@ -215,7 +216,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 &times;
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto">{content}</div>
+            <div className="flex-1 overflow-y-auto w-full">{content}</div>
           </div>
         </div>
       )}

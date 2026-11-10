@@ -40,7 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xs border-b border-zinc-200/80 no-print transition-all">
-      <div className="px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between max-w-7xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between w-full">
         <div className="flex items-center gap-3 sm:gap-4">
           <button
             type="button"
