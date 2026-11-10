@@ -65,7 +65,9 @@ export default function PublicShareInvoicePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center p-4">
-        <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mb-3" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="InvoiceGen" className="w-12 h-12 object-contain animate-pulse mb-3" />
+        <div className="w-6 h-6 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mb-3" />
         <p className="text-xs text-zinc-500 font-medium">Loading invoice...</p>
       </div>
     );

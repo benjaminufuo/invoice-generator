@@ -7,6 +7,7 @@ import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { AppLogo } from "@/components/ui/AppLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -52,13 +53,8 @@ export default function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Brand Header */}
         <div className="flex flex-col items-center">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-zinc-900 flex items-center justify-center text-white font-bold text-sm shadow-xs group-hover:bg-zinc-800 transition-colors">
-              IG
-            </div>
-            <span className="text-xl font-bold text-zinc-900 tracking-tight">
-              Invoice<span className="text-indigo-600">Gen</span>
-            </span>
+          <Link href="/" className="flex items-center group">
+            <AppLogo size="xl" />
           </Link>
           <h1 className="mt-6 text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 text-center">
             Welcome back

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AppLogo } from "@/components/ui/AppLogo";
 
 export default function HomePage() {
   return (
@@ -6,13 +7,8 @@ export default function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-zinc-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-white font-bold text-xs shadow-2xs group-hover:bg-zinc-800 transition-colors">
-              IG
-            </div>
-            <span className="text-base font-bold text-zinc-900 tracking-tight">
-              Invoice<span className="text-indigo-600">Gen</span>
-            </span>
+          <Link href="/" className="flex items-center group">
+            <AppLogo size="md" />
           </Link>
 
           <div className="flex items-center gap-3 sm:gap-4">
@@ -192,6 +188,7 @@ export default function HomePage() {
       <footer className="bg-white border-t border-zinc-200/80 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
           <div className="flex items-center gap-2">
+            <AppLogo size="sm" showText={false} />
             <span className="font-semibold text-zinc-800">InvoiceGen</span>
             <span>•</span>
             <span>Minimalist financial software</span>

@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
+import { AppLogo } from "@/components/ui/AppLogo";
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -62,13 +63,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </svg>
           </button>
 
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="w-7.5 h-7.5 rounded-lg bg-zinc-900 flex items-center justify-center text-white font-bold text-xs shadow-2xs group-hover:bg-zinc-800 transition-colors">
-              IG
-            </div>
-            <span className="text-base font-bold text-zinc-900 tracking-tight">
-              Invoice<span className="text-indigo-600">Gen</span>
-            </span>
+          <Link href="/dashboard" className="flex items-center group">
+            <AppLogo size="md" />
           </Link>
         </div>
 

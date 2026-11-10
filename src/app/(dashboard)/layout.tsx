@@ -43,8 +43,14 @@ export default function DashboardLayout({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fbfbfd]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="InvoiceGen"
+            className="w-14 h-14 object-contain animate-pulse"
+          />
+          <div className="w-5 h-5 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin" />
           <p className="text-xs font-medium text-zinc-500 tracking-tight">
             Loading your workspace...
           </p>
