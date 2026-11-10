@@ -2,7 +2,8 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/client";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -11,6 +12,19 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut();
+      if (onClose) onClose();
+      router.push("/login");
+      router.refresh();
+    } catch (err) {
+      console.error("Sign out failed", err);
+      window.location.href = "/login";
+    }
+  };
 
   // Close drawer on escape key
   useEffect(() => {
@@ -138,12 +152,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         })}
       </nav>
 
-      <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400">
-        <span className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          Connected
-        </span>
-        <span className="font-mono text-[10px]">v1.0</span>
+      <div className="pt-3 border-t border-zinc-100 space-y-1.5">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex items-center w-full px-3 py-2 text-xs sm:text-sm font-medium text-red-600 hover:bg-red-50/80 rounded-lg transition-colors cursor-pointer"
+        >
+          <svg
+            className="w-4 h-4 mr-2.5 shrink-0 text-red-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.75}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          Sign Out
+        </button>
+
+        <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1 pt-1">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Connected
+          </span>
+          <span className="font-mono text-[10px]">v1.0</span>
+        </div>
       </div>
     </div>
   );

@@ -89,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={handleLogout}
-            className="h-8 px-2.5 sm:px-3 text-xs font-medium text-zinc-600 hover:text-red-600 rounded-md hover:bg-red-50/80 transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="hidden sm:flex h-8 px-2.5 sm:px-3 text-xs font-medium text-zinc-600 hover:text-red-600 rounded-md hover:bg-red-50/80 transition-colors items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             <svg
               className="w-3.5 h-3.5"
@@ -104,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
               />
             </svg>
-            <span className="hidden sm:inline">Sign Out</span>
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
